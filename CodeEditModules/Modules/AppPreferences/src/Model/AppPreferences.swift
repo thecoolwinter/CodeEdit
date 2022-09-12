@@ -28,6 +28,9 @@ public struct AppPreferences: Codable {
     /// The global settings for text editing
     public var accounts: AccountsPreferences = .init()
 
+    /// The global settings for project navigation
+    public var navigation: NavigationPreferences = .init()
+
     /// The global settings for themes
     public var theme: ThemePreferences = .init()
 
@@ -51,6 +54,7 @@ public struct AppPreferences: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.general = try container.decodeIfPresent(GeneralPreferences.self, forKey: .general) ?? .init()
         self.accounts = try container.decodeIfPresent(AccountsPreferences.self, forKey: .accounts) ?? .init()
+        self.navigation = try container.decodeIfPresent(NavigationPreferences.self, forKey: .navigation) ?? .init()
         self.theme = try container.decodeIfPresent(ThemePreferences.self, forKey: .theme) ?? .init()
         self.terminal = try container.decodeIfPresent(TerminalPreferences.self, forKey: .terminal) ?? .init()
         self.textEditing = try container.decodeIfPresent(TextEditingPreferences.self, forKey: .textEditing) ?? .init()
