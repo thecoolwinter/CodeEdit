@@ -67,6 +67,7 @@ struct CodeFileView: View {
             theme: $selectedTheme.editor.editorTheme,
             font: $font,
             tabWidth: $prefs.preferences.textEditing.defaultTabWidth,
+            indentationUnit: $prefs.preferences.textEditing.indentUnit,
             lineHeight: $prefs.preferences.textEditing.lineHeightMultiple,
             wrapLines: $prefs.preferences.textEditing.wrapLinesToEditorWidth,
             cursorPosition: codeFile.$cursorPosition,

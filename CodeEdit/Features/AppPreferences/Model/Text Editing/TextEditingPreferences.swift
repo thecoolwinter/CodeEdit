@@ -12,8 +12,31 @@ extension AppPreferences {
 
     /// The global settings for text editing
     struct TextEditingPreferences: Codable {
-        /// An integer indicating how many spaces a `tab` will generate
+        enum IndentType: String, Codable {
+            case spaces
+            case tabs
+        }
+
+        /// An integer indicating how many indentation units a `tab` will generate
         var defaultTabWidth: Int = 4
+
+        /// The number of spaces a tab will use, ignored if the indentUnit is a tab
+        var indentWidth: Int = 4 {
+            didSet {
+                indentUnit = calculateIndentUnit()
+            }
+        }
+
+        /// The unit of indentation to use.
+        var indentType: IndentType = .spaces {
+            didSet {
+                indentUnit = calculateIndentUnit()
+            }
+        }
+
+        /// The unit of indentation to use. Calculated using `intentType` and `indentWidth`.
+        /// This will not need to be set manually, and will be re-calculated when `indentType` or `indentWidth` change.
+        var indentUnit: String = ""
 
         /// The font to use in editor.
         var font: EditorFont = .init()
@@ -33,12 +56,15 @@ extension AppPreferences {
         /// Default initializer
         init() {
             self.populateCommands()
+            indentUnit = calculateIndentUnit()
         }
 
         /// Explicit decoder init for setting default values when key is not present in `JSON`
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.defaultTabWidth = try container.decodeIfPresent(Int.self, forKey: .defaultTabWidth) ?? 4
+            self.indentWidth = try container.decodeIfPresent(Int.self, forKey: .indentWidth) ?? 4
+            self.indentType = try container.decodeIfPresent(IndentType.self, forKey: .indentType) ?? .spaces
             self.font = try container.decodeIfPresent(EditorFont.self, forKey: .font) ?? .init()
             self.enableTypeOverCompletion = try container.decodeIfPresent(
                 Bool.self,
@@ -58,6 +84,7 @@ extension AppPreferences {
             ) ?? 1.45
 
             self.populateCommands()
+            indentUnit = calculateIndentUnit()
         }
 
         /// Adds toggle-able preferences to the command palette via shared `CommandManager`
@@ -90,6 +117,10 @@ extension AppPreferences {
                     AppPreferencesModel.shared.preferences.textEditing.wrapLinesToEditorWidth.toggle()
                 }
             )
+        }
+
+        private func calculateIndentUnit() -> String {
+            return indentType == IndentType.spaces ? String(repeating: " ", count: max(1, indentWidth)) : "\t"
         }
     }
 

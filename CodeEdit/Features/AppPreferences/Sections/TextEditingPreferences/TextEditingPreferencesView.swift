@@ -17,7 +17,7 @@ struct TextEditingPreferencesView: View {
         let formatter = NumberFormatter()
         formatter.allowsFloats = false
         formatter.minimum = 1
-        formatter.maximum = 8
+        formatter.maximum = 100
 
         return formatter
     }
@@ -37,18 +37,11 @@ struct TextEditingPreferencesView: View {
 
     var body: some View {
         PreferencesContent {
-            PreferencesSection("Default Tab Width") {
-                HStack(spacing: 5) {
-                    TextField("", value: $prefs.preferences.textEditing.defaultTabWidth, formatter: tabWidthFormatter)
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: 40)
-                    Stepper(
-                        "Default Tab Width:",
-                        value: $prefs.preferences.textEditing.defaultTabWidth,
-                        in: 1...8
-                    )
-                    Text("spaces")
-                }
+            PreferencesSection("Prefer Indent Using") {
+                indentSection
+            }
+            PreferencesSection("Tab Width") {
+                tabWidth
             }
             PreferencesSection("Font") {
                 fontSelector
@@ -64,6 +57,45 @@ struct TextEditingPreferencesView: View {
                 wrapLinesToEditorWidth
             }
         }
+    }
+
+    @ViewBuilder
+    private var indentSection: some View {
+        Picker("Prefer Indent Using:", selection: $prefs.preferences.textEditing.indentType) {
+            Text("Tabs").tag(AppPreferences.TextEditingPreferences.IndentType.tabs)
+            Text("Spaces").tag(AppPreferences.TextEditingPreferences.IndentType.spaces)
+        }
+        if prefs.preferences.textEditing.indentType == .spaces {
+            HStack(spacing: 5) {
+                TextField("", value: $prefs.preferences.textEditing.indentWidth, formatter: tabWidthFormatter)
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 40)
+                Stepper(
+                    "Indent Width:",
+                    value: $prefs.preferences.textEditing.indentWidth,
+                    in: 1...100
+                )
+                Text("spaces")
+            }
+            .help("The number of spaces to use in an indent.")
+        }
+    }
+
+    @ViewBuilder
+    private var tabWidth: some View {
+        HStack(spacing: 5) {
+            TextField("", value: $prefs.preferences.textEditing.defaultTabWidth, formatter: tabWidthFormatter)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 40)
+            Stepper(
+                "Tab Width:",
+                value: $prefs.preferences.textEditing.defaultTabWidth,
+                in: 1...100
+            )
+            Text("spaces")
+        }
+        .disabled(true)
+        .help("The visual width of tab characters.")
     }
 
     @ViewBuilder
