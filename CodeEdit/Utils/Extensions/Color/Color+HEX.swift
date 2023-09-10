@@ -28,7 +28,13 @@ extension Color {
         let red = (hex >> 16) & 0xFF
         let green = (hex >> 8) & 0xFF
         let blue = hex & 0xFF
-        self.init(.sRGB, red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255, opacity: alpha)
+        self.init(
+            .displayP3,
+            red: Double(red) / 255,
+            green: Double(green) / 255,
+            blue: Double(blue) / 255,
+            opacity: alpha
+        )
     }
 
     /// Returns an Int representing the `Color` in hex format (e.g.: 0x112233)
@@ -76,7 +82,7 @@ extension NSColor {
         let red = (hex >> 16) & 0xFF
         let green = (hex >> 8) & 0xFF
         let blue = hex & 0xFF
-        self.init(srgbRed: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255, alpha: alpha)
+        self.init(displayP3Red: Double(red) / 255, green: Double(green) / 255, blue: Double(blue) / 255, alpha: alpha)
     }
 
     /// Returns an Int representing the `NSColor` in hex format (e.g.: 0x112233)
