@@ -140,9 +140,13 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         [
             .toggleFirstSidebarItem,
+            .flexibleSpace,
+            .stopButton,
+            .runButton,
             .sidebarTrackingSeparator,
             .branchPicker,
             .flexibleSpace,
+            .itemListTrackingSeparator,
             .flexibleSpace,
             .toggleLastSidebarItem
         ]
@@ -155,7 +159,9 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
             .flexibleSpace,
             .itemListTrackingSeparator,
             .toggleLastSidebarItem,
-            .branchPicker
+            .branchPicker,
+            .stopButton,
+            .runButton,
         ]
     }
 
@@ -213,9 +219,36 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
             toolbarItem.view = view
 
             return toolbarItem
+        case .runButton:
+            return runButton()
+        case .stopButton:
+            return stopButton()
         default:
             return NSToolbarItem(itemIdentifier: itemIdentifier)
         }
+    }
+
+    private func runButton() -> NSToolbarItem {
+        let toolbarItem = NSToolbarItem(itemIdentifier: NSToolbarItem.Identifier.runButton)
+        toolbarItem.label = "Run Task"
+        toolbarItem.paletteLabel = "Run Task"
+        toolbarItem.toolTip = "Run the currently selected task."
+        toolbarItem.isBordered = true
+        toolbarItem.view = NSHostingView(rootView: RunTaskToolbarRunItem())
+        return toolbarItem
+    }
+
+    private func stopButton() -> NSToolbarItem {
+        let toolbarItem = NSToolbarItem(itemIdentifier: NSToolbarItem.Identifier.runButton)
+        toolbarItem.label = "Stop Task"
+        toolbarItem.paletteLabel = "Stop Task"
+        toolbarItem.toolTip = "Stop the currently running task."
+        toolbarItem.isBordered = true
+        toolbarItem.image = NSImage(
+            systemSymbolName: "stop.fill",
+            accessibilityDescription: nil
+        )?.withSymbolConfiguration(.init(scale: .large))
+        return toolbarItem
     }
 
     private func getSelectedCodeFile() -> CodeFileDocument? {

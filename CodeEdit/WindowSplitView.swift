@@ -8,6 +8,10 @@
 
 import SwiftUI
 
+/// # Dev note
+/// If you want to change, add, or modify a toolbar button. Do it here:
+/// ``CodeEditWindowController/toolbar(_:itemForItemIdentifier:willBeInsertedIntoToolbar:)``
+
 struct WindowSplitView: View {
     @StateObject var workspace: WorkspaceDocument
     @State var visibility: NavigationSplitViewVisibility = .all

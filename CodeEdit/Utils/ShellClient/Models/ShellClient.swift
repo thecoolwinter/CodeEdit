@@ -82,8 +82,16 @@ class ShellClient {
     /// - Returns: async stream of command output
     func runAsync(_ args: String...) -> AsyncThrowingStream<String, Error> {
         let (task, pipe) = generateProcessAndPipe(args)
-
-        return AsyncThrowingStream { continuation in
+        return buildAsyncStream(task: task, pipe: pipe)
+    }
+    
+    /// Creates an async stream of output data for a process and pipe and runs the task.
+    /// - Parameters:
+    ///   - task: The process to stream output from.
+    ///   - pipe: The pipe that the process has piped to.
+    /// - Returns: An async throwing stream of command output.
+    func buildAsyncStream(task: Process, pipe: Pipe) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
             pipe.fileHandleForReading.readabilityHandler = { [unowned pipe] fileHandle in
                 let data = fileHandle.availableData
                 if !data.isEmpty {

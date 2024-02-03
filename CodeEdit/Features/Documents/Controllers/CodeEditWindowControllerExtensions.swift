@@ -21,17 +21,18 @@ extension CodeEditWindowController {
     @objc
     func toggleLastPanel() {
         guard let lastSplitView = splitViewController.splitViewItems.last else { return }
-
-        if let toolbar = window?.toolbar,
-           lastSplitView.isCollapsed,
-           !toolbar.items.map(\.itemIdentifier).contains(.itemListTrackingSeparator) {
-            window?.toolbar?.insertItem(withItemIdentifier: .itemListTrackingSeparator, at: 4)
+        
+        if !lastSplitView.isCollapsed {
+            window?.animator().toolbar?.removeItem(at: 6)
         }
+
         NSAnimationContext.runAnimationGroup { _ in
             lastSplitView.animator().isCollapsed.toggle()
-        } completionHandler: { [weak self] in
-            if lastSplitView.isCollapsed {
-                self?.window?.animator().toolbar?.removeItem(at: 4)
+        } completionHandler: {
+            if let toolbar = self.window?.toolbar,
+               !lastSplitView.isCollapsed,
+               !toolbar.items.map(\.itemIdentifier).contains(.itemListTrackingSeparator) {
+                self.window?.toolbar?.insertItem(withItemIdentifier: .itemListTrackingSeparator, at: 6)
             }
         }
 
@@ -118,4 +119,6 @@ extension NSToolbarItem.Identifier {
     static let toggleLastSidebarItem: NSToolbarItem.Identifier = NSToolbarItem.Identifier("ToggleLastSidebarItem")
     static let itemListTrackingSeparator = NSToolbarItem.Identifier("ItemListTrackingSeparator")
     static let branchPicker: NSToolbarItem.Identifier = NSToolbarItem.Identifier("BranchPicker")
+    static let runButton: NSToolbarItem.Identifier = NSToolbarItem.Identifier("RunButton")
+    static let stopButton: NSToolbarItem.Identifier = NSToolbarItem.Identifier("StopButton")
 }

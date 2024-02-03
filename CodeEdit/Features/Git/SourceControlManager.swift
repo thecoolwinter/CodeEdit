@@ -44,7 +44,7 @@ final class SourceControlManager: ObservableObject {
     ) {
         self.workspaceURL = workspaceURL
         self.editorManager = editorManager
-        gitClient = GitClient(directoryURL: workspaceURL, shellClient: currentWorld.shellClient)
+        gitClient = GitClient(directoryURL: workspaceURL, shellClient: ShellClient())
     }
 
     /// Refresh all changed files and refresh status in file manager
