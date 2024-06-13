@@ -172,7 +172,7 @@ class CETerminalView: TerminalView, TerminalViewDelegate, LocalProcessDelegate {
                 guard let escapeSequence = Int(octalString, radix: 0o10) else {
                     continue
                 }
-                
+
             } else if octalCount == 1 && char == #"\"# { // if \\ entered, exit the octal string.
                 array.append(contentsOf: Array(#"\"#.utf8))
                 octalCount = -1
