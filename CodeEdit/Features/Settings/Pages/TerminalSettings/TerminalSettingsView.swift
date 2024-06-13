@@ -32,6 +32,12 @@ struct TerminalSettingsView: View {
                 injectionOptions
                 useLoginShell
             }
+            Section {
+                KeyMapView()
+            } header: {
+                Text("Key Map")
+                Text("Map keys and modifiers to text inserted into the terminal.")
+            }
         }
     }
 }
@@ -42,9 +48,9 @@ private extension TerminalSettingsView {
             Text("System Default")
                 .tag(SettingsData.TerminalShell.system)
             Divider()
-            Text("Zsh")
+            Text("zsh")
                 .tag(SettingsData.TerminalShell.zsh)
-            Text("Bash")
+            Text("bash")
                 .tag(SettingsData.TerminalShell.bash)
         }
     }

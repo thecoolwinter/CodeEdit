@@ -60,6 +60,9 @@ extension SettingsData {
         /// If `true`, use a login shell.
         var useLoginShell: Bool = true
 
+        /// Maps keys to input text.
+        var keyMap: [KeyMatch: String] = Self.defaultKeyMap
+
         /// Default initializer
         init() {}
 
@@ -78,6 +81,10 @@ extension SettingsData {
             self.useTextEditorFont = try container.decodeIfPresent(Bool.self, forKey: .useTextEditorFont) ?? true
             self.useShellIntegration = try container.decodeIfPresent(Bool.self, forKey: .useShellIntegration) ?? true
             self.useLoginShell = try container.decodeIfPresent(Bool.self, forKey: .useLoginShell) ?? true
+            self.keyMap = try container.decodeIfPresent(
+                [KeyMatch: String].self,
+                forKey: .keyMap
+            ) ?? Self.defaultKeyMap
         }
     }
 

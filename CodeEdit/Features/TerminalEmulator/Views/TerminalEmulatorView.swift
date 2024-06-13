@@ -23,9 +23,9 @@ struct TerminalEmulatorView: NSViewRepresentable {
 
     @StateObject private var themeModel: ThemeModel = .shared
 
-    static var lastTerminal: [String: LocalProcessTerminalView] = [:]
+    static var lastTerminal: [String: CETerminalView] = [:]
 
-    @State var terminal: LocalProcessTerminalView
+    @State var terminal: CETerminalView
 
     private var font: NSFont {
         if terminalSettings.useTextEditorFont {
@@ -149,7 +149,7 @@ struct TerminalEmulatorView: NSViewRepresentable {
     }
 
     /// Inherited from NSViewRepresentable.makeNSView(context:).
-    func makeNSView(context: Context) -> LocalProcessTerminalView {
+    func makeNSView(context: Context) -> CETerminalView {
         terminal.processDelegate = context.coordinator
         do {
             try setupSession()
@@ -220,7 +220,7 @@ struct TerminalEmulatorView: NSViewRepresentable {
         return nil
     }
 
-    func updateNSView(_ view: LocalProcessTerminalView, context: Context) {
+    func updateNSView(_ view: CETerminalView, context: Context) {
         if view.font != font { // Fixes Memory leak
             view.font = font
         }

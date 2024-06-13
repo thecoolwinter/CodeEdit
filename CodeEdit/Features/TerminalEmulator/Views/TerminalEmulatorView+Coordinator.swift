@@ -9,8 +9,7 @@ import SwiftUI
 import SwiftTerm
 
 extension TerminalEmulatorView {
-    final class Coordinator: NSObject, LocalProcessTerminalViewDelegate {
-
+    final class Coordinator: NSObject, CETerminalViewDelegate {
         @State private var url: URL
 
         public var onTitleChange: (_ title: String) -> Void
@@ -23,9 +22,9 @@ extension TerminalEmulatorView {
 
         func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
 
-        func sizeChanged(source: LocalProcessTerminalView, newCols: Int, newRows: Int) {}
+        func sizeChanged(source: CETerminalView, newCols: Int, newRows: Int) {}
 
-        func setTerminalTitle(source: LocalProcessTerminalView, title: String) {
+        func setTerminalTitle(source: CETerminalView, title: String) {
             onTitleChange(title)
         }
 
