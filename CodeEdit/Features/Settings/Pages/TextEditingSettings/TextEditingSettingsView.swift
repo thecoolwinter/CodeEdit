@@ -18,6 +18,9 @@ struct TextEditingSettingsView: View {
                 indentOption
                 defaultTabWidth
                 wrapLinesToEditorWidth
+                if #available(macOS 14, *) {
+                    useSystemCursor
+                }
             }
             Section {
                 fontSelector
@@ -158,5 +161,9 @@ private extension TextEditingSettingsView {
                 .disabled(!textEditing.bracketHighlight.useCustomColor)
             }
         }
+    }
+
+    @ViewBuilder private var useSystemCursor: some View {
+        Toggle("Use System Cursor", isOn: $textEditing.useSystemCursor)
     }
 }

@@ -19,6 +19,8 @@ extension SettingsData {
                 "Tab Width",
                 "Wrap lines to editor width",
                 "Font",
+                "System Cursor",
+                "Cursor",
                 "Font Size",
                 "Line Height",
                 "Letter Spacing",
@@ -38,6 +40,9 @@ extension SettingsData {
 
         /// The font to use in editor.
         var font: EditorFont = .init()
+
+        /// Whether or not to use the system cursor.
+        var useSystemCursor: Bool = true
 
         /// A flag indicating whether type-over completion is enabled
         var enableTypeOverCompletion: Bool = true
@@ -72,6 +77,7 @@ extension SettingsData {
                 forKey: .indentOption
             ) ?? IndentOption(indentType: .spaces, spaceCount: 4)
             self.font = try container.decodeIfPresent(EditorFont.self, forKey: .font) ?? .init()
+            self.useSystemCursor = try container.decodeIfPresent(Bool.self, forKey: .useSystemCursor) ?? true
             self.enableTypeOverCompletion = try container.decodeIfPresent(
                 Bool.self,
                 forKey: .enableTypeOverCompletion
