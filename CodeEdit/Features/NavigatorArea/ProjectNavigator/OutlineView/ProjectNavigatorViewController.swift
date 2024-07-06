@@ -26,7 +26,7 @@ final class ProjectNavigatorViewController: NSViewController {
         return [root]
     }
 
-    var workspace: WorkspaceDocument?
+    weak var workspace: WorkspaceDocument?
 
     var iconColor: SettingsData.FileIconStyle = .color {
         willSet {

@@ -38,21 +38,21 @@ extension CodeEditWindowController {
             name: "Quick Open",
             title: "Quick Open",
             id: "quick_open",
-            command: CommandClosureWrapper(closure: { self.openQuickly(self) })
+            command: { [weak self] in self?.openQuickly(nil) }
         )
 
         CommandManager.shared.addCommand(
             name: "Toggle Navigator",
             title: "Toggle Navigator",
             id: "toggle_left_sidebar",
-            command: CommandClosureWrapper(closure: { self.toggleFirstPanel() })
+            command: { [weak self] in self?.toggleFirstPanel() }
         )
 
         CommandManager.shared.addCommand(
             name: "Toggle Inspector",
             title: "Toggle Inspector",
             id: "toggle_right_sidebar",
-            command: CommandClosureWrapper(closure: { self.toggleLastPanel() })
+            command: { [weak self] in self?.toggleLastPanel() }
         )
     }
 
@@ -70,13 +70,13 @@ extension CodeEditWindowController {
                 fileDocument?.isDocumentEditedPublisher
             })
             .flatMap({ $0 })
-            .sink { isDocumentEdited in
+            .sink { [weak self, weak workspace] isDocumentEdited in
                 if isDocumentEdited {
-                    self.setDocumentEdited(true)
+                    self?.setDocumentEdited(true)
                     return
                 }
-
-                self.updateDocumentEdited(workspace: workspace)
+                guard let workspace = workspace else { return }
+                self?.updateDocumentEdited(workspace: workspace)
             }
             .store(in: &cancellables)
 
@@ -86,8 +86,9 @@ extension CodeEditWindowController {
             .flatMap({ editor in
                 editor.$tabs
             })
-            .sink { _ in
-                self.updateDocumentEdited(workspace: workspace)
+            .sink { [weak self, weak workspace] _ in
+                guard let workspace = workspace else { return }
+                self?.updateDocumentEdited(workspace: workspace)
             }
             .store(in: &cancellables)
     }
@@ -113,11 +114,10 @@ extension CodeEditWindowController {
         } else {
             let settingsWindow = NSWindow()
             self.workspaceSettingsWindow = settingsWindow
-            let contentView = CEWorkspaceSettingsView(
-                settings: workspaceSettings,
-                window: settingsWindow,
-                workspace: workspace
+            let contentView = WorkspaceSettingsView(
+                window: settingsWindow
             )
+            .environmentObject(workspace.workspaceSettingsModel)
 
             settingsWindow.contentView = NSHostingView(rootView: contentView)
             settingsWindow.titlebarAppearsTransparent = true

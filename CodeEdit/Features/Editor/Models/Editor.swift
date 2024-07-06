@@ -125,6 +125,9 @@ final class Editor: ObservableObject, Identifiable {
         }
         // Reset change count to 0
         file.fileDocument?.updateChangeCount(.changeCleared)
+        if let fileDocument = file.fileDocument {
+            CodeEditDocumentController.shared.removeDocument(fileDocument)
+        }
         // remove file from memory
         file.fileDocument = nil
     }

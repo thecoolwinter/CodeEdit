@@ -134,7 +134,8 @@ struct UtilityAreaTerminalView: View {
                     TerminalEmulatorView(
                         url: terminal.url!,
                         shellType: terminal.shell,
-                        onTitleChange: { newTitle in
+                        onTitleChange: { [weak terminal] newTitle in
+                            guard let terminal else { return }
                             // This can be called whenever, even in a view update so it needs to be dispatched.
                             DispatchQueue.main.async {
                                 handleTitleChange(id: terminal.id, title: newTitle)

@@ -14,8 +14,8 @@ final class CodeEditSplitViewController: NSSplitViewController {
     static let snapWidth: CGFloat = 272
     static let minSnapWidth: CGFloat = snapWidth - 10
 
-    private var workspace: WorkspaceDocument
-    private var navigatorViewModel: NavigatorSidebarViewModel
+    private weak var workspace: WorkspaceDocument?
+    private weak var navigatorViewModel: NavigatorSidebarViewModel?
     private weak var windowRef: NSWindow?
     private unowned var hapticPerformer: NSHapticFeedbackPerformer
 
@@ -48,6 +48,11 @@ final class CodeEditSplitViewController: NSSplitViewController {
         }
 
         splitView.translatesAutoresizingMaskIntoConstraints = false
+
+        guard let workspace, let navigatorViewModel else {
+            assertionFailure("Workspace freed before the view appears")
+            return
+        }
 
         let settingsView = SettingsInjector {
             NavigatorAreaView(workspace: workspace, viewModel: navigatorViewModel)
@@ -98,17 +103,17 @@ final class CodeEditSplitViewController: NSSplitViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
 
-        let navigatorWidth = workspace.getFromWorkspaceState(.splitViewWidth) as? CGFloat
+        let navigatorWidth = workspace?.getFromWorkspaceState(.splitViewWidth) as? CGFloat
         splitView.setPosition(navigatorWidth ?? Self.minSidebarWidth, ofDividerAt: 0)
 
         if let firstSplitView = splitViewItems.first {
-            firstSplitView.isCollapsed = workspace.getFromWorkspaceState(
+            firstSplitView.isCollapsed = workspace?.getFromWorkspaceState(
                 .navigatorCollapsed
             ) as? Bool ?? false
         }
 
         if let lastSplitView = splitViewItems.last {
-            lastSplitView.isCollapsed = workspace.getFromWorkspaceState(
+            lastSplitView.isCollapsed = workspace?.getFromWorkspaceState(
                 .inspectorCollapsed
             ) as? Bool ?? true
         }
@@ -178,16 +183,16 @@ final class CodeEditSplitViewController: NSSplitViewController {
             let panel = splitView.subviews[0]
             let width = panel.frame.size.width
             if width > 0 {
-                workspace.addToWorkspaceState(key: .splitViewWidth, value: width)
+                workspace?.addToWorkspaceState(key: .splitViewWidth, value: width)
             }
         }
     }
 
     func saveNavigatorCollapsedState(isCollapsed: Bool) {
-        workspace.addToWorkspaceState(key: .navigatorCollapsed, value: isCollapsed)
+        workspace?.addToWorkspaceState(key: .navigatorCollapsed, value: isCollapsed)
     }
 
     func saveInspectorCollapsedState(isCollapsed: Bool) {
-        workspace.addToWorkspaceState(key: .inspectorCollapsed, value: isCollapsed)
+        workspace?.addToWorkspaceState(key: .inspectorCollapsed, value: isCollapsed)
     }
 }

@@ -31,7 +31,7 @@ struct QuickActionsView: View {
 
     func callHandler(command: Command) {
         closePalette()
-        command.closureWrapper.call()
+        command.handler?()
         selectedItem = nil
         state.commandQuery = ""
         state.filteredCommands = []

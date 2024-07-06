@@ -6,23 +6,23 @@
 
 import Foundation
 
-/**
-The object of this class intended to be a hearth of command palette. This object only exists as singleton.
- In Order to access its instance use `CommandManager.shared`
-
-```
- /* To add or execute command see snipper below */
-let mgr = CommandManager.shared
-let wrap = CommandClosureWrapper.init(closure: {
-    print("testing closure")
-})
-
-mgr.addCommand(name: "test", command: wrap)
-mgr.executeCommand("test")
- ```
- */
-
+/// The object of this class intended to be a hearth of command palette. This object only exists as singleton.
+/// In order to access its instance use `CommandManager.shared`
+///
+///
+/// ```swift
+/// let mgr = CommandManager.shared
+/// let wrap = {
+///    print("testing handler")
+/// }
+///
+/// mgr.addCommand(name: "test", command: wrap)
+/// mgr.executeCommand("test")
+/// ```
+///
 final class CommandManager: ObservableObject {
+    typealias CommandHandler = () -> Void
+
     @Published private var commandsList: [String: Command]
 
     private init() {
@@ -31,17 +31,17 @@ final class CommandManager: ObservableObject {
 
     static let shared: CommandManager = .init()
 
-    func addCommand(name: String, title: String, id: String, command: CommandClosureWrapper) {
-        let command = Command.init(id: name, title: title, closureWrapper: command)
+    func addCommand(name: String, title: String, id: String, command: @escaping CommandHandler) {
+        let command = Command(id: name, title: title, handler: command)
         commandsList[id] = command
     }
 
     var commands: [Command] {
-        return commandsList.map { $0.value }
+        return commandsList.values.map { $0 }
     }
 
     func executeCommand(_ id: String) {
-        commandsList[id]?.closureWrapper.call()
+        commandsList[id]?.handler?()
     }
 }
 
@@ -62,24 +62,5 @@ struct Command: Identifiable, Hashable {
 
     let id: String
     let title: String
-    let closureWrapper: CommandClosureWrapper
-}
-
-/// A simple wrapper for command closure
-struct CommandClosureWrapper {
-
-    /// A typealias of interface used for command closure declaration
-    typealias WorkspaceClientClosure = () -> Void
-
-    let workspaceClientClosure: WorkspaceClientClosure?
-
-    /// Initializer for closure wrapper
-    /// - Parameter closure: Function that contains all logic to run command.
-    init(closure: @escaping WorkspaceClientClosure) {
-       self.workspaceClientClosure = closure
-    }
-
-    func call() {
-        workspaceClientClosure?()
-    }
+    let handler: CommandManager.CommandHandler?
 }

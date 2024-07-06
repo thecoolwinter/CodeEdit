@@ -10,14 +10,18 @@ import Combine
 
 /// The CodeEdit workspace settings model.
 final class CEWorkspaceSettings: ObservableObject {
-    @ObservedObject private var workspace: WorkspaceDocument
     @Published public var preferences: CEWorkspaceSettingsData = .init()
 
+    private weak var workspace: WorkspaceDocument?
     private var storeTask: AnyCancellable!
     private let fileManager = FileManager.default
 
+    var workspaceURL: URL? {
+        workspace?.fileURL
+    }
+
     private var folderURL: URL? {
-        guard let workspaceURL = workspace.fileURL else {
+        guard let workspaceURL else {
             return nil
         }
 
@@ -33,7 +37,6 @@ final class CEWorkspaceSettings: ObservableObject {
 
     init(workspaceDocument: WorkspaceDocument) {
         self.workspace = workspaceDocument
-
         loadSettings()
 
         self.storeTask = self.$preferences.throttle(for: 2.0, scheduler: RunLoop.main, latest: true).sink {

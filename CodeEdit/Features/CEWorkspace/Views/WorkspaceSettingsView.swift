@@ -1,5 +1,5 @@
 //
-//  CEWorkspaceSettingsView.swift
+//  WorkspaceSettingsView.swift
 //  CodeEdit
 //
 //  Created by Axel Martinez on 26/3/24.
@@ -9,15 +9,13 @@ import SwiftUI
 import CodeEditSymbols
 
 /// A struct for settings
-struct CEWorkspaceSettingsView: View {
-    @ObservedObject var settings: CEWorkspaceSettings
-
-    @StateObject var viewModel = SettingsViewModel()
+struct WorkspaceSettingsView: View {
+    @EnvironmentObject private var settings: CEWorkspaceSettings
+    @StateObject private var viewModel = SettingsViewModel()
     @State private var selectedPage: CEWorkspaceSettingsPage = Self.pages[0].page
     @State private var searchText: String = ""
 
     let window: NSWindow?
-    let workspace: WorkspaceDocument
 
     static var pages: [PageAndCEWorkspaceSettings] = [
         .init(

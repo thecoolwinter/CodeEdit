@@ -12,6 +12,7 @@ final class DocumentsUnitTests: XCTestCase {
     // Properties
     private var splitViewController: CodeEditSplitViewController!
     private var hapticFeedbackPerformerMock: NSHapticFeedbackPerformerMock!
+    private var workspace: WorkspaceDocument!
     private var navigatorViewModel: NavigatorSidebarViewModel!
     private var window: NSWindow!
 
@@ -20,10 +21,11 @@ final class DocumentsUnitTests: XCTestCase {
     override func setUp() {
         super.setUp()
         hapticFeedbackPerformerMock = NSHapticFeedbackPerformerMock()
+        workspace = WorkspaceDocument()
         navigatorViewModel = .init()
         window = NSWindow()
         splitViewController = .init(
-            workspace: WorkspaceDocument(),
+            workspace: workspace,
             navigatorViewModel: navigatorViewModel,
             windowRef: window,
             hapticPerformer: hapticFeedbackPerformerMock

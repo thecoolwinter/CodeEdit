@@ -30,9 +30,9 @@ extension SettingsData {
             appendNew()
 
             let mgr = CommandManager.shared
-            let wrap = CommandClosureWrapper.init(closure: {
-                print("testing closure")
-            })
+            let wrap = {
+                print("testing handler")
+            }
             mgr.addCommand(
                 name: "Send test to console",
                 title: "Send test to console", id: "codeedit.test", command: wrap

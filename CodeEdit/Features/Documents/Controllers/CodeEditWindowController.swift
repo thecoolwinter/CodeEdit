@@ -16,8 +16,7 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
 
     var observers: [NSKeyValueObservation] = []
 
-    var workspace: WorkspaceDocument?
-    var workspaceSettings: CEWorkspaceSettings?
+    weak var workspace: WorkspaceDocument?
     var workspaceSettingsWindow: NSWindow?
     var quickOpenPanel: SearchPanel?
     var commandPalettePanel: SearchPanel?
@@ -38,7 +37,6 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
         super.init(window: window)
         guard let workspace else { return }
         self.workspace = workspace
-        self.workspaceSettings = CEWorkspaceSettings(workspaceDocument: workspace)
         setupSplitView(with: workspace)
 
         // Previous:
@@ -57,12 +55,12 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
         // -----
 
         observers = [
-            splitViewController.splitViewItems.first!.observe(\.isCollapsed, changeHandler: { [weak self] item, _ in
+            splitViewController.splitViewItems.first!.observe(\.isCollapsed) { [weak self] item, _ in
                 self?.navigatorCollapsed = item.isCollapsed
-            }),
-            splitViewController.splitViewItems.last!.observe(\.isCollapsed, changeHandler: { [weak self] item, _ in
+            },
+            splitViewController.splitViewItems.last!.observe(\.isCollapsed) { [weak self] item, _ in
                 self?.inspectorCollapsed = item.isCollapsed
-            })
+            }
         ]
 
         setupToolbar()
@@ -125,7 +123,7 @@ final class CodeEditWindowController: NSWindowController, NSToolbarDelegate, Obs
         }
     }
 
-    @IBAction func openQuickly(_ sender: Any) {
+    @IBAction func openQuickly(_ sender: Any?) {
         if let workspace, let state = workspace.quickOpenViewModel {
             if let quickOpenPanel {
                 if quickOpenPanel.isKeyWindow {

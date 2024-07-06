@@ -38,6 +38,7 @@ final class WorkspaceDocument: NSDocument, ObservableObject, NSToolbarDelegate {
     var commandsPaletteState: QuickActionsViewModel?
     var listenerModel: WorkspaceNotificationModel = .init()
     var sourceControlManager: SourceControlManager?
+    var workspaceSettingsModel: CEWorkspaceSettings?
 
     var taskNotificationHandler: TaskNotificationHandler = TaskNotificationHandler()
 
@@ -125,6 +126,7 @@ final class WorkspaceDocument: NSDocument, ObservableObject, NSToolbarDelegate {
         self.searchState = .init(self)
         self.quickOpenViewModel = .init(fileURL: url)
         self.commandsPaletteState = .init()
+        self.workspaceSettingsModel = CEWorkspaceSettings(workspaceDocument: self)
 
         editorManager.restoreFromState(self)
         utilityAreaModel.restoreFromState(self)
@@ -211,6 +213,7 @@ final class WorkspaceDocument: NSDocument, ObservableObject, NSToolbarDelegate {
             .compactMap(\.fileDocument)
             .allSatisfy { !$0.isDocumentEdited }
         function(object, shouldCloseSelector, self, areAllOpenedCodeFilesClean, contextInfo)
+
     }
 
     // MARK: NSDocument delegate

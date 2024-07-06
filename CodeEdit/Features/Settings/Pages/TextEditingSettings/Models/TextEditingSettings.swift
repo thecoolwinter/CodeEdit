@@ -109,27 +109,21 @@ extension SettingsData {
                 name: "Toggle Type-Over Completion",
                 title: "Toggle Type-Over Completion",
                 id: "prefs.text_editing.type_over_completion",
-                command: CommandClosureWrapper {
-                    Settings.shared.preferences.textEditing.enableTypeOverCompletion.toggle()
-                }
+                command: { Settings.shared.preferences.textEditing.enableTypeOverCompletion.toggle() }
             )
 
             mgr.addCommand(
                 name: "Toggle Autocomplete Braces",
                 title: "Toggle Autocomplete Braces",
                 id: "prefs.text_editing.autocomplete_braces",
-                command: CommandClosureWrapper {
-                    Settings.shared.preferences.textEditing.autocompleteBraces.toggle()
-                }
+                command: { Settings.shared.preferences.textEditing.autocompleteBraces.toggle() }
             )
 
             mgr.addCommand(
                 name: "Toggle Word Wrap",
                 title: "Toggle Word Wrap",
                 id: "prefs.text_editing.wrap_lines_to_editor_width",
-                command: CommandClosureWrapper {
-                    Settings[\.textEditing].wrapLinesToEditorWidth.toggle()
-                }
+                command: { Settings[\.textEditing].wrapLinesToEditorWidth.toggle() }
             )
         }
 
