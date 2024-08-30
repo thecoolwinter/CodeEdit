@@ -20,12 +20,16 @@ enum ShellIntegration {
         static let userZDotDir = "USER_ZDOTDIR"
         static let zDotDir = "ZDOTDIR"
         static let ceInjection = "CE_INJECTION"
+
+        /// Used for modifying env variables for fish
+        static let fishDataDirs = "XDG_DATA_DIRS"
     }
 
     /// Errors for shell integration setup.
     enum Error: Swift.Error, LocalizedError {
         case bashShellFileNotFound
         case zshShellFileNotFound
+        case fishShellFileNotFound
 
         var localizedDescription: String {
             switch self {
@@ -33,6 +37,8 @@ enum ShellIntegration {
                 return "Failed to find bash injection file."
             case .zshShellFileNotFound:
                 return "Failed to find zsh injection file."
+            case .fishShellFileNotFound:
+                return "Failed to find fish injection file."
             }
         }
     }
@@ -51,19 +57,21 @@ enum ShellIntegration {
     /// - Returns: An array of args to pass to the shell executable.
     /// - Throws: Errors involving filesystem operations. This function requires copying various files, which can
     ///           throw. Can also throw ``ShellIntegration/Error`` errors if required files are not found in the bundle.
-    static func setUpIntegration(for shell: Shell, environment: inout [String], useLogin: Bool) throws -> [String] {
+    static func setUpIntegration(for shell: ShellConfiguration, environment: inout [String], useLogin: Bool) throws -> [String] {
         do {
-            logger.debug("Setting up shell: \(shell.rawValue)")
+            logger.debug("Setting up shell: \(shell.label)")
             var args: [String] = []
 
             // Enable injection in our scripts.
             environment.append("\(Variables.ceInjection)=1")
 
-            switch shell {
+            switch shell.profile {
             case .bash:
                 try bash(&args)
             case .zsh:
                 try zsh(&args, &environment, useLogin)
+            case .fish:
+                try fish(path: shell.path ?? "/bin/sh", &args, &environment, useLogin)
             }
 
             if useLogin {
@@ -154,6 +162,34 @@ enum ShellIntegration {
         try copyFile(loginScriptURL, toDir: tempDir.appending(path: ".zlogin"))
         try copyFile(rcScriptURL, toDir: tempDir.appending(path: ".zshrc"))
     }
+
+    /// 🐟
+    private static func fish(path: String, _ args: inout [String], _ environment: inout [String], _ useLogin: Bool) throws {
+        guard let injectionFile = Bundle.main.url(
+            forResource: "codeedit_shell_integration",
+            withExtension: "fish"
+        ) else {
+            throw Error.fishShellFileNotFound
+        }
+
+        let currentUser = CurrentUser.getCurrentUser()
+        let baseTempDir = try makeTempDir(forShell: .fish(path: path), user: currentUser)
+        let tempDir = baseTempDir.appending(components: "fish", "vendor_conf.d")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+        try copyFile(injectionFile, toDir: tempDir)
+
+        let oldDataDirs: String
+        if let oldDataDirsRaw = environment.first(where: { $0.starts(with: Variables.fishDataDirs + "=") }) {
+             oldDataDirs = String(oldDataDirsRaw.trimmingPrefix(Variables.fishDataDirs + "="))
+        } else {
+            oldDataDirs = "/usr/local/share:/usr/share"
+        }
+
+        environment.append("\(Variables.fishDataDirs)=\(baseTempDir.path(percentEncoded: false)):\(oldDataDirs)")
+    }
+
+    // MARK: - Temp Dir Helpers
 
     /// Helper function for safely copying files, removing existing ones if needed.
     /// - Parameters:

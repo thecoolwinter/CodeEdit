@@ -47,6 +47,16 @@ private extension TerminalSettingsView {
                 .tag(SettingsData.TerminalShell.zsh)
             Text("Bash")
                 .tag(SettingsData.TerminalShell.bash)
+            Text("Fish")
+                .tag(SettingsData.TerminalShell.fish)
+        }
+    }
+
+    @ViewBuilder private var shellPath: some View {
+        switch settings.shell {
+        case .bash, .zsh, .system:
+            TextField("", text: <#T##Binding<String>#>, prompt: <#T##Text?#>)
+        case .fish:
         }
     }
 

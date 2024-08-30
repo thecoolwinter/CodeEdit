@@ -84,10 +84,12 @@ extension SettingsData {
     /// The shell options.
     /// - **bash**: uses the default bash shell
     /// - **zsh**: uses the ZSH shell
+    /// - **fish**: uses the fish shell
     /// - **system**: uses the system default shell (most likely ZSH)
     enum TerminalShell: String, Codable, Hashable {
         case bash
         case zsh
+        case fish
         case system
     }
 
