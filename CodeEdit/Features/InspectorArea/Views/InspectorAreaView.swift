@@ -18,12 +18,18 @@ struct InspectorAreaView: View {
     @AppSettings(\.general.inspectorTabBarPosition)
     var sidebarPosition: SettingsData.SidebarTabBarPosition
 
+    @AppSettings(\.developerSettings.showSyntaxInspector)
+    var showSyntaxInspector
+
     @State private var selection: InspectorTab? = .file
 
     init(viewModel: InspectorAreaViewModel) {
         self.viewModel = viewModel
 
         viewModel.tabItems = [.file, .gitHistory]
+        if Settings[\.developerSettings.showSyntaxInspector] {
+            viewModel.tabItems += [.syntaxInspector]
+        }
         viewModel.tabItems += extensionManager
             .extensions
             .map { ext in
@@ -73,5 +79,17 @@ struct InspectorAreaView: View {
         .formStyle(.grouped)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("inspector")
+        .onChange(of: showSyntaxInspector) { newValue in
+            if newValue {
+                if !viewModel.tabItems.contains(.syntaxInspector) {
+                    viewModel.tabItems.insert(.syntaxInspector, at: 2)
+                }
+            } else {
+                if viewModel.tabItems.contains(.syntaxInspector) {
+                    viewModel.tabItems.removeAll(where: { $0 == .syntaxInspector })
+                }
+            }
+
+        }
     }
 }

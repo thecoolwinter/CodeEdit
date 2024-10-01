@@ -12,6 +12,7 @@ import ExtensionFoundation
 enum InspectorTab: AreaTab {
     case file
     case gitHistory
+    case syntaxInspector
     case uiExtension(endpoint: AppExtensionIdentity, data: ResolvedSidebar.SidebarStore)
 
     var systemImage: String {
@@ -20,6 +21,8 @@ enum InspectorTab: AreaTab {
             return "doc"
         case .gitHistory:
             return "clock"
+        case .syntaxInspector:
+            return "doc.text.magnifyingglass"
         case .uiExtension(_, let data):
             return data.icon ?? "e.square"
         }
@@ -38,6 +41,8 @@ enum InspectorTab: AreaTab {
             return "File Inspector"
         case .gitHistory:
             return "History Inspector"
+        case .syntaxInspector:
+            return "Syntax Inspector"
         case .uiExtension(_, let data):
             return data.help ?? data.sceneID
         }
@@ -49,6 +54,8 @@ enum InspectorTab: AreaTab {
             FileInspectorView()
         case .gitHistory:
             HistoryInspectorView()
+        case .syntaxInspector:
+            SyntaxInspectorView()
         case let .uiExtension(endpoint, data):
             ExtensionSceneView(with: endpoint, sceneID: data.sceneID)
         }

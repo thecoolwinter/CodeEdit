@@ -13,6 +13,9 @@ struct DeveloperSettingsView: View {
     @AppSettings(\.developerSettings.lspBinaries)
     var lspBinaries
 
+    @AppSettings(\.developerSettings.showSyntaxInspector)
+    var showSyntaxInspector
+
     var body: some View {
         SettingsForm {
             Section {
@@ -31,6 +34,12 @@ struct DeveloperSettingsView: View {
             } header: {
                 Text("LSP Binaries")
                 Text("Specify the language and the absolute path to the language server binary.")
+            }
+            Section {
+                Toggle(isOn: $showSyntaxInspector) {
+                    Text("Show Syntax Inspector")
+                    Text("Enables the syntax inspector tab in the inspector sidebar")
+                }
             }
         }
     }

@@ -23,6 +23,8 @@ extension SettingsData {
         /// A dictionary that stores a file type and a path to an LSP binary
         var lspBinaries: [String: String] = [:]
 
+        var showSyntaxInspector: Bool = false
+
         /// Default initializer
         init() {}
 
@@ -34,6 +36,7 @@ extension SettingsData {
                 [String: String].self,
                 forKey: .lspBinaries
             ) ?? [:]
+            self.showSyntaxInspector = try container.decodeIfPresent(Bool.self, forKey: .showSyntaxInspector) ?? false
         }
     }
 }
