@@ -29,9 +29,9 @@ struct SyntaxInspectorView: View {
 
     func updateSyntaxInformation(file: CodeFileDocument) {
         var foundRanges: Set<NSRange> = []
-        syntaxInformation = cursorPositions.compactMap { position in
+        syntaxInformation = cursorPositions.compactMap { position -> SyntaxInformation? in
             var range = NSRange.zero
-            return withUnsafeMutablePointer(to: &range) { rangePtr in
+            return withUnsafeMutablePointer(to: &range) { rangePtr -> SyntaxInformation? in
                 guard let data = file.content?.attribute(
                     .syntaxToken,
                     at: position.range.location,
@@ -43,7 +43,7 @@ struct SyntaxInspectorView: View {
                     foundRanges.insert(rangePtr.pointee)
                     return SyntaxInformation(
                         range: rangePtr.pointee,
-                        data: SyntaxTokenAttributeData(capture: nil, modifiers: [])
+                        data: SyntaxTokenAttributeData(capture: nil, modifiers: [], sources: [])
                     )
                 }
                 guard !foundRanges.contains(rangePtr.pointee) else {
