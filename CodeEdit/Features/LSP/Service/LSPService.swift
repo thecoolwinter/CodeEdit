@@ -102,10 +102,10 @@ final class LSPService: ObservableObject {
     let logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "", category: "LSPService")
 
     struct ClientKey: Hashable, Equatable {
-        let languageId: LanguageIdentifier
+        let languageId: String
         let workspacePath: String
 
-        init(_ languageId: LanguageIdentifier, _ workspacePath: String) {
+        init(_ languageId: String, _ workspacePath: String) {
             self.languageId = languageId
             self.workspacePath = workspacePath
         }
@@ -114,7 +114,7 @@ final class LSPService: ObservableObject {
     /// Holds the active language clients
     var languageClients: [ClientKey: LanguageServer] = [:]
     /// Holds the language server configurations for all the installed language servers
-    var languageConfigs: [LanguageIdentifier: LanguageServerBinary] = [:]
+    var languageConfigs: [String: LanguageServerBinary] = [:]
     /// Holds all the event listeners for each active language client
     var eventListeningTasks: [ClientKey: Task<Void, Never>] = [:]
 
@@ -124,13 +124,11 @@ final class LSPService: ObservableObject {
     init() {
         // Load the LSP binaries from the developer menu
         for binary in lspBinaries {
-            if let language = LanguageIdentifier(rawValue: binary.key) {
-                self.languageConfigs[language] = LanguageServerBinary(
-                    execPath: binary.value,
-                    args: [],
-                    env: ProcessInfo.processInfo.environment
-                )
-            }
+            self.languageConfigs[binary.key] = LanguageServerBinary(
+                execPath: binary.value,
+                args: [],
+                env: ProcessInfo.processInfo.environment
+            )
         }
 
         NotificationCenter.default.addObserver(
@@ -157,12 +155,12 @@ final class LSPService: ObservableObject {
     }
 
     /// Gets the language server for the specified language and workspace.
-    func server(for languageId: LanguageIdentifier, workspacePath: String) -> InitializingServer? {
+    func server(for languageId: String, workspacePath: String) -> InitializingServer? {
         return languageClients[ClientKey(languageId, workspacePath)]?.lspInstance
     }
 
     /// Gets the language client for the specified language
-    func languageClient(for languageId: LanguageIdentifier, workspacePath: String) -> LanguageServer? {
+    func languageClient(for languageId: String, workspacePath: String) -> LanguageServer? {
         return languageClients[ClientKey(languageId, workspacePath)]
     }
 
@@ -172,22 +170,22 @@ final class LSPService: ObservableObject {
     ///   - workspacePath: The workspace this language server is being used in.
     /// - Returns: The new language server.
     func startServer(
-        for languageId: LanguageIdentifier,
+        for languageId: String,
         workspacePath: String
     ) async throws -> LanguageServer {
         guard let serverBinary = languageConfigs[languageId] else {
-            logger.error("Couldn't find language sever binary for \(languageId.rawValue)")
+            logger.error("Couldn't find language sever binary for \(languageId)")
             throw LSPError.binaryNotFound
         }
 
-        logger.info("Starting \(languageId.rawValue) language server")
+        logger.info("Starting \(languageId) language server")
         let server = try await LanguageServer.createServer(
             for: languageId,
             with: serverBinary,
             workspacePath: workspacePath
         )
         languageClients[ClientKey(languageId, workspacePath)] = server
-        logger.info("Successfully started \(languageId.rawValue) language server")
+        logger.info("Successfully started \(languageId) language server")
 
         self.startListeningToEvents(for: ClientKey(languageId, workspacePath))
         return server
@@ -198,10 +196,11 @@ final class LSPService: ObservableObject {
     /// - Parameter document: The code document that was opened.
     func openDocument(_ document: CodeFileDocument) {
         guard let workspace = document.findWorkspace(),
-              let workspacePath = workspace.fileURL?.absoluteURL.path(),
-              let lspLanguage = document.getLanguage().lspLanguage else {
+              let workspacePath = workspace.fileURL?.absoluteURL.path() else {
             return
         }
+        let lspLanguage = document.getLanguage().id.rawValue
+
         Task {
             let languageServer: LanguageServer
             do {
@@ -212,15 +211,15 @@ final class LSPService: ObservableObject {
                 }
             } catch {
                 // swiftlint:disable:next line_length
-                self.logger.error("Failed to find/start server for language: \(lspLanguage.rawValue), workspace: \(workspacePath, privacy: .private)")
+                self.logger.error("Failed to find/start server for language: \(lspLanguage), workspace: \(workspacePath, privacy: .private)")
                 return
             }
             do {
                 try await languageServer.openDocument(document)
             } catch {
-                let uri = await document.languageServerURI
+                let uri = document.languageServerURI
                 // swiftlint:disable:next line_length
-                self.logger.error("Failed to close document: \(uri ?? "<NO URI>", privacy: .private), language: \(lspLanguage.rawValue). Error \(error)")
+                self.logger.error("Failed to close document: \(uri ?? "<NO URI>", privacy: .private), language: \(lspLanguage). Error \(error)")
             }
         }
     }
@@ -238,7 +237,7 @@ final class LSPService: ObservableObject {
                 try await languageClient.closeDocument(url.absolutePath)
             } catch {
                 // swiftlint:disable:next line_length
-                logger.error("Failed to close document: \(url.absolutePath, privacy: .private), language: \(languageClient.languageId.rawValue). Error \(error)")
+                logger.error("Failed to close document: \(url.absolutePath, privacy: .private), language: \(languageClient.languageId). Error \(error)")
             }
         }
     }
@@ -257,7 +256,7 @@ final class LSPService: ObservableObject {
                 do {
                     try await languageClient.shutdown()
                 } catch {
-                    logger.error("Failed to shutdown \(key.languageId.rawValue) Language Server: Error \(error)")
+                    logger.error("Failed to shutdown \(key.languageId) Language Server: Error \(error)")
                 }
             }
             for (key, _) in clientKeys {
@@ -271,19 +270,19 @@ final class LSPService: ObservableObject {
     /// - Parameters:
     ///   - languageId: The ID of the language server to stop.
     ///   - workspacePath: The path of the workspace to stop the language server for.
-    func stopServer(forLanguage languageId: LanguageIdentifier, workspacePath: String) async throws {
+    func stopServer(forLanguage languageId: String, workspacePath: String) async throws {
         guard let server = server(for: languageId, workspacePath: workspacePath) else {
-            logger.error("Server not found for language \(languageId.rawValue) during stop operation")
+            logger.error("Server not found for language \(languageId) during stop operation")
             throw ServerManagerError.serverNotFound
         }
         do {
             try await server.shutdownAndExit()
         } catch {
-            logger.error("Failed to stop server for language \(languageId.rawValue): \(error.localizedDescription)")
+            logger.error("Failed to stop server for language \(languageId): \(error.localizedDescription)")
             throw error
         }
         languageClients.removeValue(forKey: ClientKey(languageId, workspacePath))
-        logger.info("Server stopped for language \(languageId.rawValue)")
+        logger.info("Server stopped for language \(languageId)")
 
         stopListeningToEvents(for: ClientKey(languageId, workspacePath))
     }
@@ -296,7 +295,7 @@ final class LSPService: ObservableObject {
                     do {
                         try await server.shutdown()
                     } catch {
-                        self.logger.error("Shutting down \(key.languageId.rawValue): Error \(error)")
+                        self.logger.error("Shutting down \(key.languageId): Error \(error)")
                         throw error
                     }
                 }

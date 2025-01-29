@@ -7,6 +7,7 @@
 
 import SwiftUI
 import LanguageServerProtocol
+import CodeEditLanguages
 
 /// A view that implements the Developer settings section
 struct DeveloperSettingsView: View {
@@ -18,7 +19,7 @@ struct DeveloperSettingsView: View {
             Section {
                 KeyValueTable(
                     items: $lspBinaries,
-                    validKeys: LanguageIdentifier.allCases.map { $0.rawValue },
+                    validKeys: CodeLanguage.allLanguages.map { $0.id.rawValue },
                     keyColumnName: "Language",
                     valueColumnName: "Language Server Path",
                     newItemInstruction: "Add a language server"

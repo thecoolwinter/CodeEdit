@@ -16,7 +16,7 @@ class LanguageServer {
     let logger: Logger
 
     /// Identifies which language the server belongs to
-    let languageId: LanguageIdentifier
+    let languageId: String
     /// Holds information about the language server binary
     let binary: LanguageServerBinary
     /// A cache to hold responses from the server, to minimize duplicate server requests
@@ -39,7 +39,7 @@ class LanguageServer {
     private(set) var rootPath: URL
 
     init(
-        languageId: LanguageIdentifier,
+        languageId: String,
         binary: LanguageServerBinary,
         lspInstance: InitializingServer,
         serverCapabilities: ServerCapabilities,
@@ -53,7 +53,7 @@ class LanguageServer {
         self.openFiles = LanguageServerFileMap()
         self.logger = Logger(
             subsystem: Bundle.main.bundleIdentifier ?? "",
-            category: "LanguageServer.\(languageId.rawValue)"
+            category: "LanguageServer.\(languageId)"
         )
         if let semanticTokensProvider = serverCapabilities.semanticTokensProvider {
             self.highlightMap = SemanticTokenMap(semanticCapability: semanticTokensProvider)
@@ -69,7 +69,7 @@ class LanguageServer {
     ///   - workspacePath: The path of the workspace being opened.
     /// - Returns: An initialized language server.
     static func createServer(
-        for languageId: LanguageIdentifier,
+        for languageId: String,
         with binary: LanguageServerBinary,
         workspacePath: String
     ) async throws -> LanguageServer {
@@ -101,19 +101,19 @@ class LanguageServer {
     ///   - executionParams: The parameters for executing the local process.
     /// - Returns: A new connection to the language server.
     static func makeLocalServerConnection(
-        languageId: LanguageIdentifier,
+        languageId: String,
         executionParams: Process.ExecutionParameters
     ) throws -> JSONRPCServerConnection {
         do {
             let channel = try DataChannel.localProcessChannel(
                 parameters: executionParams,
                 terminationHandler: {
-                    logger.debug("Terminated data channel for \(languageId.rawValue)")
+                    logger.debug("Terminated data channel for \(languageId)")
                 }
             )
             return JSONRPCServerConnection(dataChannel: channel)
         } catch {
-            logger.warning("Failed to initialize data channel for \(languageId.rawValue)")
+            logger.warning("Failed to initialize data channel for \(languageId)")
             throw error
         }
     }

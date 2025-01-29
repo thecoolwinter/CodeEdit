@@ -11,7 +11,7 @@ import LanguageServerProtocol
 extension LSPService {
     func startListeningToEvents(for key: ClientKey) {
         guard let languageClient = languageClients[key] else {
-            logger.error("Language client not found for \(key.languageId.rawValue)")
+            logger.error("Language client not found for \(key.languageId)")
             return
         }
 

@@ -112,11 +112,13 @@ extension LanguageServer {
     @MainActor
     private func getIsolatedDocumentContent(_ document: CodeFileDocument) -> DocumentContent? {
         guard let uri = document.languageServerURI,
-              let language = document.getLanguage().lspLanguage,
               let content = document.content?.string else {
             return nil
         }
-        return DocumentContent(uri: uri, language: language, string: content)
+        let language = document.getLanguage()
+        // Use the standardized lsp language if possible, default to the tree-sitter language
+        let languageIdentifier = language.lspLanguage?.rawValue ?? language.id.rawValue
+        return DocumentContent(uri: uri, language: languageIdentifier, string: content)
     }
 
     @MainActor
@@ -156,7 +158,7 @@ extension LanguageServer {
     // Used to avoid a lint error (`large_tuple`) for the return type of `getIsolatedDocumentContent`
     fileprivate struct DocumentContent {
         let uri: String
-        let language: LanguageIdentifier
+        let language: String
         let string: String
     }
 }
