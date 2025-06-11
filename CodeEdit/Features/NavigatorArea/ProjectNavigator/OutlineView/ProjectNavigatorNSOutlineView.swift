@@ -34,4 +34,18 @@ final class ProjectNavigatorNSOutlineView: NSOutlineView, NSMenuItemValidation {
         }
         return false
     }
+
+    override func mouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        let row = row(at: point)
+        let column = column(at: point)
+
+        guard event.clickCount == 2 && row >= 0 && column >= 0,
+              let rowView = view(atColumn: column, row: row, makeIfNecessary: false) as? NSTableCellView else {
+            super.mouseDown(with: event)
+            return
+        }
+
+        window?.makeFirstResponder(rowView.textField)
+    }
 }
