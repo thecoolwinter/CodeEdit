@@ -45,27 +45,18 @@ class CEOpenWith: FIFinderSync {
     /// - Parameter sender: sender
     @objc
     func openInCodeEditAction(_ sender: AnyObject?) {
-        guard let items = FIFinderSyncController.default().selectedItemURLs(),
-              let defaults = UserDefaults.init(suiteName: "app.codeedit.CodeEdit.shared") else {
+        guard let items = FIFinderSyncController.default().selectedItemURLs() else {
             return
         }
 
-        // Make values compatible to ArrayLiteralElement
-        var files = ""
+        let openURLs = items.compactMap { URL(string: "codeedit://" + $0.absoluteURL.path(percentEncoded: false)) }
 
-        for obj in items {
-            files.append("\(obj.path);")
+        guard let codeEdit = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "app.codeedit.CodeEdit") else {
+            return
         }
 
-        guard let codeEdit = NSWorkspace.shared.urlForApplication(
-            withBundleIdentifier: "app.codeedit.CodeEdit"
-        ) else { return }
-
-        // Add files to open to openInCEFiles.
-        defaults.set(files, forKey: "openInCEFiles")
-
         NSWorkspace.shared.open(
-            [],
+            openURLs,
             withApplicationAt: codeEdit,
             configuration: NSWorkspace.OpenConfiguration()
         )
@@ -77,9 +68,6 @@ class CEOpenWith: FIFinderSync {
             logger.error("Unable to load defaults")
             return NSMenu(title: "")
         }
-
-        // Register enableOpenInCE (enable Open In CodeEdit
-        defaults.register(defaults: ["enableOpenInCE": true])
 
         let menu = NSMenu(title: "")
         let menuItem = NSMenuItem(

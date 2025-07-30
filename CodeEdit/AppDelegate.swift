@@ -23,7 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func applicationDidFinishLaunching(_ notification: Notification) {
         enableWindowSizeSaveOnQuit()
         Settings.shared.preferences.general.appAppearance.applyAppearance()
-        checkForFilesToOpen()
 
         NSApp.closeWindow(.welcome, .about)
 
@@ -204,40 +203,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         window.makeKeyAndOrderFront(self)
         return true
-    }
-
-    // MARK: - Open With CodeEdit (Extension) functions
-    private func checkForFilesToOpen() {
-        guard let defaults = UserDefaults.init(
-            suiteName: "app.codeedit.CodeEdit.shared"
-        ) else {
-            print("Failed to get/init shared defaults")
-            return
-        }
-
-        // Register enableOpenInCE (enable Open In CodeEdit
-        defaults.register(defaults: ["enableOpenInCE": true])
-
-        if let filesToOpen = defaults.string(forKey: "openInCEFiles") {
-            let files = filesToOpen.split(separator: ";")
-
-            for filePath in files {
-                let fileURL = URL(fileURLWithPath: String(filePath))
-                CodeEditDocumentController.shared.reopenDocument(
-                    for: fileURL,
-                    withContentsOf: fileURL,
-                    display: true
-                ) { document, _, _ in
-                    document?.windowControllers.first?.synchronizeWindowTitleWithDocumentName()
-                }
-            }
-
-            defaults.removeObject(forKey: "openInCEFiles")
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            self?.checkForFilesToOpen()
-        }
     }
 
     /// Enable window size restoring on app relaunch after quitting.
