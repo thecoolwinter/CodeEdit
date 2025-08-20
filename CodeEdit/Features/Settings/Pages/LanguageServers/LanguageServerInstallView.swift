@@ -148,7 +148,9 @@ struct LanguageServerInstallView: View {
     @ViewBuilder private var progressSection: some View {
         Section {
             LabeledContent("Step") {
-                if registryManager.installedLanguageServers.first(where: { $0.packageName == operation.package.name }) != nil {
+                if registryManager.installedLanguageServers.contains(
+                    where: { $0.packageName == operation.package.name }
+                ) {
                     HStack(spacing: 4) {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
