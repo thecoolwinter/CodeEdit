@@ -38,6 +38,7 @@ final class PackageManagerInstallOperation: ObservableObject, Identifiable {
     nonisolated var id: String { package.name }
 
     let package: RegistryItem
+    let manager: PackageManagerProtocol
     let steps: [PackageManagerInstallStep]
 
     /// The step the operation is currently executing or stopped at.
@@ -74,8 +75,9 @@ final class PackageManagerInstallOperation: ObservableObject, Identifiable {
     /// - Parameters:
     ///   - package: The package to install.
     ///   - steps: The steps that make up the operation.
-    init(package: RegistryItem, steps: [PackageManagerInstallStep]) {
+    init(package: RegistryItem, manager: PackageManagerProtocol, steps: [PackageManagerInstallStep]) {
         self.package = package
+        self.manager = manager
         self.steps = steps
         self.progress = Progress(totalUnitCount: Int64(steps.count))
     }

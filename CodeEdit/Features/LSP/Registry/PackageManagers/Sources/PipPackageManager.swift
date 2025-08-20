@@ -56,7 +56,15 @@ final class PipPackageManager: PackageManagerProtocol {
                 throw PackageManagerError.packageManagerNotInstalled
             }
         }
+    }
 
+    func serverConfiguration(for package: String) -> LanguageServerConfiguration {
+        LanguageServerConfiguration(
+            exec: .executable(path: getBinaryPath(for: package)),
+            initializationOptions: nil,
+            args: [],
+            env: nil
+        )
     }
 
     /// Get the binary path for a Python package

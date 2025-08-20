@@ -17,6 +17,7 @@ struct RegistryItem: Codable {
     let categories: [String]
     let source: Source
     let bin: [String: String]?
+    let neovim: [String: String]?
 
     var sanitizedName: String {
         name.replacingOccurrences(of: "-", with: " ")
@@ -66,6 +67,11 @@ struct RegistryItem: Codable {
         } else {
             return nil
         }
+    }
+
+    func parseBin() throws -> String {
+        let registryInfo = try toDictionary()
+        return try RegistryItemTemplateParser.process(template: bin?.first?.value ?? "", with: registryInfo)
     }
 
     /// Serializes back to JSON format

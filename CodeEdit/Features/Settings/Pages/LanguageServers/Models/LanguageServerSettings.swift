@@ -24,26 +24,30 @@ extension SettingsData {
         }
 
         /// Stores the currently installed language servers. The key is the name of the language server.
-        var installedLanguageServers: [String: InstalledLanguageServer] = [:]
+        var installedLanguageServers: [InstalledLanguageServer] = []
 
         /// Default initializer
         init() {
-            self.installedLanguageServers = [:]
+            self.installedLanguageServers = []
         }
 
         /// Explicit decoder init for setting default values when key is not present in `JSON`
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.installedLanguageServers = try container.decodeIfPresent(
-                [String: InstalledLanguageServer].self,
+                [InstalledLanguageServer].self,
                 forKey: .installedLanguageServers
-            ) ?? [:]
+            ) ?? []
         }
     }
 
-    struct InstalledLanguageServer: Codable, Hashable {
+    struct InstalledLanguageServer: Codable, Hashable, Identifiable {
+        var id: String { packageName }
+
         let packageName: String
         var isEnabled: Bool
         let version: String
+
+        let configuration: LanguageServerConfiguration
     }
 }

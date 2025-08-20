@@ -10,11 +10,8 @@ import Foundation
 final class CargoPackageManager: PackageManagerProtocol {
     private let installationDirectory: URL
 
-    let shellClient: ShellClient
-
     init(installationDirectory: URL) {
         self.installationDirectory = installationDirectory
-        self.shellClient = .live()
     }
 
     func install(method installationMethod: InstallationMethod) throws -> [PackageManagerInstallStep] {
@@ -41,6 +38,15 @@ final class CargoPackageManager: PackageManagerProtocol {
                 throw PackageManagerError.packageManagerNotInstalled
             }
         }
+    }
+
+    func serverConfiguration(for package: String) -> LanguageServerConfiguration {
+        LanguageServerConfiguration(
+            exec: .executable(path: getBinaryPath(for: package)),
+            initializationOptions: nil,
+            args: [],
+            env: nil
+        )
     }
 
     func getBinaryPath(for package: String) -> String {

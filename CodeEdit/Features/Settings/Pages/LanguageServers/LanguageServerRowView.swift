@@ -15,10 +15,10 @@ struct LanguageServerRowView: View, Equatable {
     let onInstall: (() async -> Void)
 
     private var isInstalled: Bool {
-        registryManager.installedLanguageServers[package.name] != nil
+        registryManager.installedLanguageServers.contains(where: { $0.packageName == package.name })
     }
     private var isEnabled: Bool {
-        registryManager.installedLanguageServers[package.name]?.isEnabled ?? false
+        registryManager.installedLanguageServers.first(where: { $0.packageName == package.name })?.isEnabled ?? false
     }
 
     @State private var isHovering: Bool = false

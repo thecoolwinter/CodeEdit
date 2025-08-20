@@ -72,6 +72,15 @@ final class GithubPackageManager: PackageManagerProtocol {
         }
     }
 
+    func serverConfiguration(for package: String) -> LanguageServerConfiguration {
+        LanguageServerConfiguration(
+            exec: .executable(path: getBinaryPath(for: package)),
+            initializationOptions: nil,
+            args: [],
+            env: nil
+        )
+    }
+
     func getBinaryPath(for package: String) -> String {
         return installationDirectory.appending(path: package).appending(path: "bin").path
     }

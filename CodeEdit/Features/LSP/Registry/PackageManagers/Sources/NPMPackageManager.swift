@@ -52,6 +52,15 @@ final class NPMPackageManager: PackageManagerProtocol {
         }
     }
 
+    func serverConfiguration(for package: String) -> LanguageServerConfiguration {
+        LanguageServerConfiguration(
+            exec: .executable(path: getBinaryPath(for: package)),
+            initializationOptions: nil,
+            args: [],
+            env: nil
+        )
+    }
+
     /// Get the path to the binary
     func getBinaryPath(for package: String) -> String {
         let binDirectory = installationDirectory

@@ -54,6 +54,15 @@ final class GolangPackageManager: PackageManagerProtocol {
         }
     }
 
+    func serverConfiguration(for package: String) -> LanguageServerConfiguration {
+        LanguageServerConfiguration(
+            exec: .executable(path: getBinaryPath(for: package)),
+            initializationOptions: nil,
+            args: [],
+            env: nil
+        )
+    }
+
     /// Get the binary path for a Go package
     func getBinaryPath(for package: String) -> String {
         let binPath = installationDirectory.appending(path: package).appending(path: "bin")

@@ -46,7 +46,7 @@ final class RegistryManager: ObservableObject {
     @Published public private(set) var registryItems: [RegistryItem] = []
 
     @AppSettings(\.languageServers.installedLanguageServers)
-    var installedLanguageServers: [String: SettingsData.InstalledLanguageServer]
+    var installedLanguageServers: [SettingsData.InstalledLanguageServer]
 
     init() {
         // Load the registry items from disk again after cache expires
@@ -66,7 +66,10 @@ final class RegistryManager: ObservableObject {
     // MARK: - Enable/Disable
 
     func setPackageEnabled(packageName: String, enabled: Bool) {
-        installedLanguageServers[packageName]?.isEnabled = enabled
+        guard let idx = installedLanguageServers.firstIndex(where: { $0.packageName == packageName }) else {
+            return
+        }
+        installedLanguageServers[idx].isEnabled = enabled
     }
 
     // MARK: - Uninstall
@@ -77,7 +80,7 @@ final class RegistryManager: ObservableObject {
         let packageDirectory = installPath.appending(path: packageName)
 
         guard FileManager.default.fileExists(atPath: packageDirectory.path) else {
-            installedLanguageServers.removeValue(forKey: packageName)
+            installedLanguageServers.removeAll(where: { $0.packageName == packageName })
             return
         }
 
@@ -96,7 +99,7 @@ final class RegistryManager: ObservableObject {
             try await Task.detached(priority: .userInitiated) {
                 try FileManager.default.removeItem(at: packageDirectory)
             }.value
-            installedLanguageServers.removeValue(forKey: packageName)
+            installedLanguageServers.removeAll(where: { $0.packageName == packageName })
         } catch {
             throw error
         }
@@ -113,7 +116,7 @@ final class RegistryManager: ObservableObject {
             throw PackageManagerError.invalidConfiguration
         }
         let installSteps = try manager.install(method: method)
-        return PackageManagerInstallOperation(package: package, steps: installSteps)
+        return PackageManagerInstallOperation(package: package, manager: manager, steps: installSteps)
     }
 
     /// Starts the actual installation process for a package
@@ -154,13 +157,28 @@ final class RegistryManager: ObservableObject {
                 return
             }
 
-            self?.installedLanguageServers[operation.package.name] = .init(
-                packageName: operation.package.name,
-                isEnabled: true,
-                version: method.version ?? ""
+            self?.updateInstalledServersList(
+                package: operation.package,
+                manager: operation.manager,
+                version: method.version
             )
             self?.updateActivityViewer(operation.package.name, activityTitle, fail: false)
         }
+    }
+
+    func updateInstalledServersList(package: RegistryItem, manager: PackageManagerProtocol, version: String?, ) {
+        let installItem = SettingsData.InstalledLanguageServer(
+            packageName: package.name,
+            isEnabled: true,
+            version: version ?? "",
+            configuration: manager.serverConfiguration(for: package.name)
+        )
+
+        guard let idx = installedLanguageServers.firstIndex(where: { $0.packageName == package.name }) else {
+            installedLanguageServers.append(installItem)
+            return
+        }
+        installedLanguageServers[idx] = installItem
     }
 
     // MARK: - Cancel Install
