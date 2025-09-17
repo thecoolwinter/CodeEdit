@@ -15,7 +15,7 @@ import Foundation
 /// "protolint_{{ version | strip_prefix \"v\" }}_darwin_arm64.tar.gz" will be parsed into:
 /// protolint_0.53.0_darwin_arm64.tar.gz
 ///
-/// > Moved from `RegistryItemTemplateParser` for easier use while decoding ``RegistryItem``.
+/// - Note: Moved from `RegistryItemTemplateParser` for easier use while decoding ``RegistryItem``.
 struct ExpressionString: Codable {
     let template: String
 
