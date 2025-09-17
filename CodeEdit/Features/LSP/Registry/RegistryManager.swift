@@ -109,11 +109,17 @@ final class RegistryManager: ObservableObject {
             throw RegistryManagerError.installationRunning
         }
         guard let method = package.installMethod,
-              let manager = method.packageManager(installPath: installPath) else {
+              let entryName = method.source?.entryName else {
             throw PackageManagerError.invalidConfiguration
         }
+        let installPath = installPath.appending(path: entryName)
+
+        guard let manager = method.packageManagerType?.packageManager(installPath: installPath) else {
+            throw PackageManagerError.invalidConfiguration
+        }
+
         let installSteps = try manager.install(method: method)
-        return PackageManagerInstallOperation(package: package, steps: installSteps)
+        return PackageManagerInstallOperation(installURL: installPath, package: package, steps: installSteps)
     }
 
     /// Starts the actual installation process for a package
@@ -131,6 +137,11 @@ final class RegistryManager: ObservableObject {
     }
 
     private func installPackage(operation: PackageManagerInstallOperation, method: InstallationMethod) {
+        guard let source = method.source,
+              let runCommand = operation.package.runCommand(source: source, installPath: operation.installURL) else {
+            return
+        }
+
         installTask = Task { [weak self] in
             defer {
                 self?.installTask = nil
@@ -155,6 +166,8 @@ final class RegistryManager: ObservableObject {
             }
 
             self?.installedLanguageServers[operation.package.name] = .init(
+                source: .registry,
+                exec: .registry(command: runCommand),
                 packageName: operation.package.name,
                 isEnabled: true,
                 version: method.version ?? ""

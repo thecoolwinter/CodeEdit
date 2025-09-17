@@ -18,6 +18,17 @@ enum InstallationMethod: Equatable {
     /// For installations that aren't recognized
     case unknown
 
+    var source: PackageSource? {
+        switch self {
+        case .standardPackage(let source),
+             .sourceBuild(let source, _),
+             .binaryDownload(let source, _):
+            source
+        case .unknown:
+            nil
+        }
+    }
+
     var packageName: String? {
         switch self {
         case .standardPackage(let source),
@@ -47,26 +58,6 @@ enum InstallationMethod: Equatable {
              .binaryDownload(let source, _):
             return source.type
         case .unknown:
-            return nil
-        }
-    }
-
-    func packageManager(installPath: URL) -> PackageManagerProtocol? {
-        switch packageManagerType {
-        case .npm:
-            return NPMPackageManager(installationDirectory: installPath)
-        case .cargo:
-            return CargoPackageManager(installationDirectory: installPath)
-        case .pip:
-            return PipPackageManager(installationDirectory: installPath)
-        case .golang:
-            return GolangPackageManager(installationDirectory: installPath)
-        case .github, .sourceBuild:
-            return GithubPackageManager(installationDirectory: installPath)
-        case .nuget, .opam, .gem, .composer:
-            // TODO: IMPLEMENT OTHER PACKAGE MANAGERS
-            return nil
-        default:
             return nil
         }
     }

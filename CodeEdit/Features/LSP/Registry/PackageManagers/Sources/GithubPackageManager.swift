@@ -22,14 +22,14 @@ final class GithubPackageManager: PackageManagerProtocol {
     func install(method installationMethod: InstallationMethod) throws -> [PackageManagerInstallStep] {
         switch installationMethod {
         case let .binaryDownload(source, url):
-            let packagePath = installationDirectory.appending(path: source.entryName)
+            let packagePath = installationDirectory
             return [
                 initialize(in: packagePath),
                 downloadBinary(source, url: url, installDir: installationDirectory),
                 decompressBinary(source, url: url, installDir: installationDirectory)
             ]
         case let .sourceBuild(source, command):
-            let packagePath = installationDirectory.appending(path: source.entryName)
+            let packagePath = installationDirectory
             return [
                 initialize(in: packagePath),
                 try gitClone(source, installDir: installationDirectory),
@@ -70,10 +70,6 @@ final class GithubPackageManager: PackageManagerProtocol {
                 handler: { _ in throw PackageManagerError.invalidConfiguration }
             )
         }
-    }
-
-    func getBinaryPath(for package: String) -> String {
-        return installationDirectory.appending(path: package).appending(path: "bin").path
     }
 
     // MARK: - Initialize
@@ -160,6 +156,7 @@ final class GithubPackageManager: PackageManagerProtocol {
             let downloadPath = installationDirectory.appending(path: source.entryName)
             let packagePath = downloadPath.appending(path: fileName)
 
+            // TODO: Decompress VSIX bundles (zip)
             if packagePath.pathExtension == "tar" || packagePath.pathExtension == ".zip" {
                 await model.status("Decompressing \(fileName)")
                 try await FileManager.default.unzipItem(at: packagePath, to: downloadPath, progress: model.progress)

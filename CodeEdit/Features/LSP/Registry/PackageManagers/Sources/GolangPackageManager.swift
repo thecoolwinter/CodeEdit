@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class GolangPackageManager: PackageManagerProtocol {
+final class GolangPackageManager: PackageManagerProtocol, PackageExecutableProtocol {
     private let installationDirectory: URL
 
     let shellClient: ShellClient
@@ -24,7 +24,7 @@ final class GolangPackageManager: PackageManagerProtocol {
             throw PackageManagerError.invalidConfiguration
         }
 
-        let packagePath = installationDirectory.appending(path: source.entryName)
+        let packagePath = installationDirectory
         var steps = [
             initialize(in: packagePath),
             runGoInstall(source, packagePath: packagePath)
@@ -55,7 +55,7 @@ final class GolangPackageManager: PackageManagerProtocol {
     }
 
     /// Get the binary path for a Go package
-    func getBinaryPath(for package: String) -> String {
+    func getRunCommand(for package: String) -> String {
         let binPath = installationDirectory.appending(path: package).appending(path: "bin")
         let binaryName = package.components(separatedBy: "/").last ?? package
         let specificBinPath = binPath.appending(path: binaryName).path

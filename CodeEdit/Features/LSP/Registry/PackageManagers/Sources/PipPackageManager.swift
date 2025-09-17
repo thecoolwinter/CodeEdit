@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class PipPackageManager: PackageManagerProtocol {
+final class PipPackageManager: PackageManagerProtocol, PackageExecutableProtocol {
     private let installationDirectory: URL
 
     let shellClient: ShellClient
@@ -24,7 +24,7 @@ final class PipPackageManager: PackageManagerProtocol {
             throw PackageManagerError.invalidConfiguration
         }
 
-        let packagePath = installationDirectory.appending(path: source.entryName)
+        let packagePath = installationDirectory
         return [
             initialize(in: packagePath),
             runPipInstall(source, in: packagePath),
@@ -60,7 +60,7 @@ final class PipPackageManager: PackageManagerProtocol {
     }
 
     /// Get the binary path for a Python package
-    func getBinaryPath(for package: String) -> String {
+    func getRunCommand(for package: String) -> String {
         let packagePath = installationDirectory.appending(path: package)
         let customBinPath = packagePath.appending(path: "bin").appending(path: package).path
         if FileManager.default.fileExists(atPath: customBinPath) {

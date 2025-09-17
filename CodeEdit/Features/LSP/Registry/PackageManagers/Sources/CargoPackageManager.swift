@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CargoPackageManager: PackageManagerProtocol {
+final class CargoPackageManager: PackageManagerProtocol, PackageExecutableProtocol {
     private let installationDirectory: URL
 
     let shellClient: ShellClient
@@ -21,7 +21,7 @@ final class CargoPackageManager: PackageManagerProtocol {
         guard case .standardPackage(let source) = installationMethod else {
             throw PackageManagerError.invalidConfiguration
         }
-        let packagePath = installationDirectory.appending(path: source.entryName)
+        let packagePath = installationDirectory
         return [
             initialize(in: packagePath),
             runCargoInstall(source, in: packagePath)
@@ -43,7 +43,7 @@ final class CargoPackageManager: PackageManagerProtocol {
         }
     }
 
-    func getBinaryPath(for package: String) -> String {
+    func getRunCommand(for package: String) -> String {
         return installationDirectory.appending(path: package).appending(path: "bin").path
     }
 

@@ -5,6 +5,8 @@
 //  Created by Abe Malla on 5/12/25.
 //
 
+import Foundation
+
 /// Package manager types supported by the system
 enum PackageManagerType: String, Codable {
     /// JavaScript
@@ -50,6 +52,24 @@ enum PackageManagerType: String, Codable {
             "Build From Source"
         case .github:
             "Download From GitHub"
+        }
+    }
+
+    func packageManager(installPath: URL) -> PackageManagerProtocol? {
+        switch self {
+        case .npm:
+            return NPMPackageManager(installationDirectory: installPath)
+        case .cargo:
+            return CargoPackageManager(installationDirectory: installPath)
+        case .pip:
+            return PipPackageManager(installationDirectory: installPath)
+        case .golang:
+            return GolangPackageManager(installationDirectory: installPath)
+        case .github, .sourceBuild:
+            return GithubPackageManager(installationDirectory: installPath)
+        case .nuget, .opam, .gem, .composer:
+            // TODO: IMPLEMENT OTHER PACKAGE MANAGERS
+            return nil
         }
     }
 }

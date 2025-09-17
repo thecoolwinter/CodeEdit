@@ -51,7 +51,7 @@ extension RegistryItem {
                 }
             }
 
-            func getDarwinFileName() -> String? {
+            func getDarwinFileName() -> ExpressionString? {
                 switch self {
                 case .single(let asset):
                     if asset.target.isDarwinTarget() {
@@ -64,7 +64,7 @@ extension RegistryItem {
                     }
 
                 case .simpleFile(let fileName):
-                    return fileName
+                    return ExpressionString(fileName)
 
                 case .none:
                     return nil
@@ -103,7 +103,7 @@ extension RegistryItem {
                 }
             }
 
-            func getUnixBuildCommand() -> String? {
+            func getUnixBuildCommand() -> ExpressionString? {
                 switch self {
                 case .single(let build):
                     return build.run
@@ -123,20 +123,20 @@ extension RegistryItem {
 
         struct Build: Codable {
             let target: Target?
-            let run: String
-            let env: [String: String]?
+            let run: ExpressionString
+            let env: [String: ExpressionString]?
             let bin: BinContainer?
         }
 
         struct Asset: Codable {
             let target: Target
-            let file: String?
+            let file: ExpressionString?
             let bin: BinContainer?
 
             init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
                 self.target = try container.decode(Target.self, forKey: .target)
-                self.file = try container.decodeIfPresent(String.self, forKey: .file)
+                self.file = try container.decodeIfPresent(ExpressionString.self, forKey: .file)
                 self.bin = try container.decodeIfPresent(BinContainer.self, forKey: .bin)
             }
         }
@@ -195,14 +195,14 @@ extension RegistryItem {
         }
 
         enum BinContainer: Codable {
-            case single(String)
-            case multiple([String: String])
+            case single(ExpressionString)
+            case multiple([String: ExpressionString])
 
             init(from decoder: Decoder) throws {
                 let container = try decoder.singleValueContainer()
-                if let singleValue = try? container.decode(String.self) {
+                if let singleValue = try? container.decode(ExpressionString.self) {
                     self = .single(singleValue)
-                } else if let dictValue = try? container.decode([String: String].self) {
+                } else if let dictValue = try? container.decode([String: ExpressionString].self) {
                     self = .multiple(dictValue)
                 } else {
                     throw DecodingError.typeMismatch(

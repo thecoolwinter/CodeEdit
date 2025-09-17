@@ -41,7 +41,14 @@ extension SettingsData {
         }
     }
 
+    enum InstalledLanguageServerSource: Codable, Hashable {
+        case manual
+        case registry
+    }
+
     struct InstalledLanguageServer: Codable, Hashable {
+        let source: InstalledLanguageServerSource
+        let exec: LanguageServerConfiguration
         let packageName: String
         var isEnabled: Bool
         let version: String

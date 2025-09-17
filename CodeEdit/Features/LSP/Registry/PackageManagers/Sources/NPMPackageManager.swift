@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class NPMPackageManager: PackageManagerProtocol {
+final class NPMPackageManager: PackageManagerProtocol, PackageExecutableProtocol {
     private let installationDirectory: URL
 
     let shellClient: ShellClient
@@ -24,7 +24,7 @@ final class NPMPackageManager: PackageManagerProtocol {
             throw PackageManagerError.invalidConfiguration
         }
 
-        let packagePath = installationDirectory.appending(path: source.entryName)
+        let packagePath = installationDirectory
         return [
             initialize(in: packagePath),
             runNpmInstall(source, installDir: packagePath),
@@ -53,7 +53,7 @@ final class NPMPackageManager: PackageManagerProtocol {
     }
 
     /// Get the path to the binary
-    func getBinaryPath(for package: String) -> String {
+    func getRunCommand(for package: String) -> String {
         let binDirectory = installationDirectory
             .appending(path: package)
             .appending(path: "node_modules")

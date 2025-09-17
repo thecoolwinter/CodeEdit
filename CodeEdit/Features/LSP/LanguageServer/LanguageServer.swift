@@ -21,7 +21,7 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
     /// Identifies which language the server belongs to
     let languageId: LanguageIdentifier
     /// Holds information about the language server binary
-    let binary: LanguageServerBinary
+    let config: LanguageServerConfiguration
     /// A cache to hold responses from the server, to minimize duplicate server requests
     let lspCache = LSPCache()
 
@@ -47,7 +47,7 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
 
     init(
         languageId: LanguageIdentifier,
-        binary: LanguageServerBinary,
+        config: LanguageServerConfiguration,
         lspInstance: InitializingServer,
         lspPid: pid_t,
         serverCapabilities: ServerCapabilities,
@@ -55,7 +55,7 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
         logContainer: LanguageServerLogContainer
     ) {
         self.languageId = languageId
-        self.binary = binary
+        self.config = config
         self.lspInstance = lspInstance
         self.pid = lspPid
         self.serverCapabilities = serverCapabilities
@@ -81,13 +81,16 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
     /// - Returns: An initialized language server.
     static func createServer(
         for languageId: LanguageIdentifier,
-        with binary: LanguageServerBinary,
+        with config: LanguageServerConfiguration,
         workspacePath: String
     ) async throws -> LanguageServer {
+        guard let execPath = config.execPath else {
+            throw LSPError.invalidConfiguration(config: config)
+        }
         let executionParams = Process.ExecutionParameters(
-            path: binary.execPath,
-            arguments: binary.args,
-            environment: binary.env
+            path: execPath,
+            arguments: config.args,
+            environment: config.env
         )
 
         let logContainer = LanguageServerLogContainer(language: languageId)
@@ -104,7 +107,7 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
 
         return LanguageServer(
             languageId: languageId,
-            binary: binary,
+            config: config,
             lspInstance: server,
             lspPid: process.processIdentifier,
             serverCapabilities: initializationResponse.capabilities,
@@ -262,16 +265,7 @@ class LanguageServer<DocumentType: LanguageServerDocument> {
     }
 }
 
-/// Represents a language server binary.
-struct LanguageServerBinary: Codable {
-    /// The path to the language server binary.
-    let execPath: String
-    /// The arguments to pass to the language server binary.
-    let args: [String]
-    /// The environment variables to pass to the language server binary.
-    let env: [String: String]?
-}
-
 enum LSPError: Error {
     case binaryNotFound
+    case invalidConfiguration(config: LanguageServerConfiguration)
 }

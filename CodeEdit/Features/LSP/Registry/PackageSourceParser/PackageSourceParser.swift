@@ -64,24 +64,21 @@ enum PackageSourceParser {
         guard let assetContainer = entry.source.asset,
               let repoURL = pkgSource.repositoryUrl,
               case .tag(let gitTag) = pkgSource.gitReference,
-              var fileName = assetContainer.getDarwinFileName(),
-              !fileName.isEmpty
+              var fileNameRaw = assetContainer.getDarwinFileName(),
+              !fileNameRaw.template.isEmpty
         else {
             return .unknown
         }
 
         do {
-            var registryInfo = try entry.toDictionary()
-            registryInfo["version"] = pkgSource.version
-            fileName = try RegistryItemTemplateParser.process(
-                template: fileName, with: registryInfo
-            )
+            let registryInfo = try entry.toDictionary(source: pkgSource)
+            let fileName = try fileNameRaw.resolve(with: registryInfo)
+
+            let downloadURL = URL(string: "\(repoURL)/releases/download/\(gitTag)/\(fileName)")!
+            return .binaryDownload(source: pkgSource, url: downloadURL)
         } catch {
             return .unknown
         }
-
-        let downloadURL = URL(string: "\(repoURL)/releases/download/\(gitTag)/\(fileName)")!
-        return .binaryDownload(source: pkgSource, url: downloadURL)
     }
 
     private static func parseGithubSourceBuild(
@@ -89,10 +86,16 @@ enum PackageSourceParser {
         _ entry: RegistryItem
     ) -> InstallationMethod {
         guard let build = entry.source.build,
-              let command = build.getUnixBuildCommand()
+              var commandRaw = build.getUnixBuildCommand()
         else {
             return .unknown
         }
-        return .sourceBuild(source: pkgSource, command: command)
+        do {
+            let registryInfo = try entry.toDictionary(source: pkgSource)
+            let command = try commandRaw.resolve(with: registryInfo)
+            return .sourceBuild(source: pkgSource, command: command)
+        } catch {
+            return .unknown
+        }
     }
 }

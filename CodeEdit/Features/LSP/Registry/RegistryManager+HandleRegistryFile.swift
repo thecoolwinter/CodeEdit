@@ -112,6 +112,30 @@ extension RegistryManager {
         }
     }
 
+    /// Helper for decoding a list of registry items with lossy decoding.
+    /// Will not throw if it fails to decode a ``RegistryItem`` from one of the items in the decoded array.
+    /// This means we can have require some guarantees of items in the list, such as a non-nil ``RegistryItem/bin``
+    /// property.
+    fileprivate struct RegistryItemList: Decodable {
+        let list: [RegistryItem]
+
+        init(from decoder: any Decoder) throws {
+            struct Empty: Decodable { }
+
+            var container = try decoder.unkeyedContainer()
+            var list: [RegistryItem] = []
+            list.reserveCapacity(container.count ?? 10)
+            while !container.isAtEnd {
+                if let item = try? container.decode(RegistryItem.self) {
+                    list.append(item)
+                } else {
+                    _ = try container.decode(Empty.self) // skip this value
+                }
+            }
+            self.list = list
+        }
+    }
+
     /// Loads registry items from disk
     func loadItemsFromDisk() -> [RegistryItem]? {
         let registryPath = installPath.appending(path: "registry.json")
@@ -133,7 +157,7 @@ extension RegistryManager {
 
         do {
             let registryData = try Data(contentsOf: registryPath)
-            let items = try JSONDecoder().decode([RegistryItem].self, from: registryData)
+            let items = try JSONDecoder().decode(RegistryItemList.self, from: registryData).list
             return items.filter { $0.categories.contains("LSP") }
         } catch {
             return nil

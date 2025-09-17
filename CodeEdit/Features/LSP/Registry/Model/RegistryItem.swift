@@ -16,7 +16,7 @@ struct RegistryItem: Codable {
     let languages: [String]
     let categories: [String]
     let source: Source
-    let bin: [String: String]?
+    let bin: [String: ExpressionString]
 
     var sanitizedName: String {
         name.replacingOccurrences(of: "-", with: " ")
@@ -68,13 +68,48 @@ struct RegistryItem: Codable {
         }
     }
 
+    var binExprString: ExpressionString? {
+        if bin.isEmpty { return nil }
+
+        if bin.count == 1 {
+            return bin.first?.value
+        }
+
+        let filterStrings = ["language_server", "language-server", "-ls", "_ls", "langserver", "languageserver"]
+        return bin
+            .sorted(by: { $0.key < $1.key })
+            .first(where: {
+                for string in filterStrings where $0.key.lowercased().contains(string) {
+                    return true
+                }
+                return false
+            })?
+            .value
+    }
+
+    func runCommand(source: PackageSource, installPath: URL) -> String? {
+        guard var binExprString,
+              let registryInfo = try? toDictionary(source: source),
+              let bin = try? binExprString.resolve(with: registryInfo) else {
+            return nil
+        }
+
+        if let (packageManager, packageName) = PackageExecutableType.parse(binString: bin) {
+            return packageManager.executableResolver(installPath: installPath)?.getRunCommand(for: packageName)
+        }
+
+        // TODO: Basic file resolver
+        return nil
+    }
+
     /// Serializes back to JSON format
-    func toDictionary() throws -> [String: Any] {
+    func toDictionary(source: PackageSource) throws -> [String: Any] {
         let data = try JSONEncoder().encode(self)
         let jsonObject = try JSONSerialization.jsonObject(with: data)
-        guard let dictionary = jsonObject as? [String: Any] else {
+        guard var dictionary = jsonObject as? [String: Any] else {
             throw NSError(domain: "ConversionError", code: 1)
         }
+        dictionary["version"] = source.version
         return dictionary
     }
 }

@@ -1,5 +1,5 @@
 //
-//  RegistryItemTemplateParser.swift
+//  ExpressionString.swift
 //  CodeEdit
 //
 //  Created by Abe Malla on 3/9/25.
@@ -7,13 +7,45 @@
 
 import Foundation
 
-/// This parser is used to parse expressions that may be included in a field of a registry item.
+/// Represents an un-parsed string from the mason registry, with a method for resolving any scripting or variable
+/// replacements in the string using ``resolve(with:)``.
 ///
+/// This parser is used to parse expressions that may be included in a field of a registry item.
 /// Example:
 /// "protolint_{{ version | strip_prefix \"v\" }}_darwin_arm64.tar.gz" will be parsed into:
 /// protolint_0.53.0_darwin_arm64.tar.gz
-enum RegistryItemTemplateParser {
+///
+/// > Moved from `RegistryItemTemplateParser` for easier use while decoding ``RegistryItem``.
+struct ExpressionString: Codable {
+    let template: String
 
+    private var cache: String?
+
+    mutating func resolve(with context: [String: Any]) throws -> String {
+        if let cache {
+            return cache
+        } else {
+            let value = try _resolve(with: context)
+            cache = value
+            return value
+        }
+    }
+
+    init(_ rawValue: String) {
+        self.template = rawValue
+    }
+
+    init(from decoder: any Decoder) throws {
+        template = try decoder.singleValueContainer().decode(String.self)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(template)
+    }
+}
+
+extension ExpressionString {
     enum TemplateError: Error {
         case invalidFilter(String)
         case missingVariable(String)
@@ -48,7 +80,7 @@ enum RegistryItemTemplateParser {
         }
     }
 
-    static func process(template: String, with context: [String: Any]) throws -> String {
+    private func _resolve(with context: [String: Any]) throws -> String {
         var result = template
 
         // Find all {{ ... }} patterns
@@ -93,7 +125,7 @@ enum RegistryItemTemplateParser {
     }
 
     /// Get a value by traversing a dot-separated path in a nested dictionary
-    private static func getValueFromPath(_ path: String, in context: [String: Any]) throws -> String {
+    private func getValueFromPath(_ path: String, in context: [String: Any]) throws -> String {
         let pathComponents = path.components(separatedBy: ".")
         var currentValue: Any = context
 

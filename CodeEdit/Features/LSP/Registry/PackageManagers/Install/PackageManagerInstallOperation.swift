@@ -37,6 +37,7 @@ final class PackageManagerInstallOperation: ObservableObject, Identifiable {
 
     nonisolated var id: String { package.name }
 
+    let installURL: URL
     let package: RegistryItem
     let steps: [PackageManagerInstallStep]
 
@@ -70,11 +71,13 @@ final class PackageManagerInstallOperation: ObservableObject, Identifiable {
     private var outputIdx = 0
 
     /// Create a new operation using a list of steps and a package description.
-    /// See ``PackageManagerProtocol`` for 
+    /// See ``PackageManagerProtocol`` for more information.
     /// - Parameters:
+    ///   - installURL: The directory the operation will install into.
     ///   - package: The package to install.
     ///   - steps: The steps that make up the operation.
-    init(package: RegistryItem, steps: [PackageManagerInstallStep]) {
+    init(installURL: URL, package: RegistryItem, steps: [PackageManagerInstallStep]) {
+        self.installURL = installURL.appending(path: package.name)
         self.package = package
         self.steps = steps
         self.progress = Progress(totalUnitCount: Int64(steps.count))

@@ -117,7 +117,7 @@ final class LSPService: ObservableObject {
     /// Holds the active language clients
     @Published var languageClients: [ClientKey: LanguageServerType] = [:]
     /// Holds the language server configurations for all the installed language servers
-    var languageConfigs: [LanguageIdentifier: LanguageServerBinary] = [:]
+    var languageConfigs: [LanguageIdentifier: LanguageServerConfiguration] = [:]
     /// Holds all the event listeners for each active language client
     var eventListeningTasks: [ClientKey: Task<Void, Never>] = [:]
 
@@ -129,15 +129,15 @@ final class LSPService: ObservableObject {
 
     init() {
         // Load the LSP binaries from the developer menu
-        for binary in lspBinaries {
-            if let language = LanguageIdentifier(rawValue: binary.key) {
-                self.languageConfigs[language] = LanguageServerBinary(
-                    execPath: binary.value,
-                    args: [],
-                    env: ProcessInfo.processInfo.environment
-                )
-            }
-        }
+//        for binary in lspBinaries {
+//            if let language = LanguageIdentifier(rawValue: binary.key) {
+//                self.languageConfigs[language] = LanguageServerBinary(
+//                    execPath: binary.value,
+//                    args: [],
+//                    env: ProcessInfo.processInfo.environment
+//                )
+//            }
+//        }
 
         NotificationCenter.default.addObserver(
             forName: CodeFileDocument.didOpenNotification,

@@ -11,10 +11,10 @@ import Foundation
 protocol PackageManagerProtocol {
     var shellClient: ShellClient { get }
 
+    init(installationDirectory: URL)
+
     /// Calls the shell commands to install a package
     func install(method installationMethod: InstallationMethod) throws -> [PackageManagerInstallStep]
-    /// Gets the location of the binary that was installed
-    func getBinaryPath(for package: String) -> String
     /// Checks if the shell commands for the package manager are available or not
     func isInstalled(method installationMethod: InstallationMethod) -> PackageManagerInstallStep
 }
